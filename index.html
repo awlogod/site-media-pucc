@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Médias - PUC Campinas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <img src="logo.png" alt="Logo AvaliaPucc" id="siteLogo" class="site-logo">
+            </div>
+            <h1>📚 AvaliaPucc</h1>
+            <p>Calculadora que gerencia suas notas e calcula as médias por matéria</p>
+        </header>
+
+        <main>
+            <!-- Seção de Login -->
+            <section class="card" id="loginCard">
+                <h2>Identificação</h2>
+                <div class="input-group">
+                    <input type="text" id="nomeAluno" placeholder="Nome completo">
+                </div>
+                <div class="input-group">
+                    <input type="text" id="raAluno" placeholder="RA (Registro Acadêmico - 8 dígitos)" maxlength="8" oninput="validarRA()">
+                </div>
+                <div id="erroRA" class="mensagem-erro" style="display: none;"></div>
+                <button onclick="acessarMaterias()">Acessar Matérias</button>
+            </section>
+
+            <!-- Informações do Aluno -->
+            <section class="card" id="infoAluno" style="display: none;">
+                <h2 id="infoAlunoTexto"></h2>
+            </section>
+
+            <!-- Lista de Matérias -->
+            <div id="listaMaterias"></div>
+
+            <!-- Card de Feedback -->
+            <section class="card feedback-card" id="feedbackCard" style="display: none;">
+                <div class="feedback-header">
+                    <h2>💡 Envie suas Dicas de Melhorias</h2>
+                </div>
+                <p class="feedback-description">Tem alguma sugestão para melhorar o site? Envie sua mensagem para nós!</p>
+                <form id="feedbackForm" onsubmit="enviarFeedback(event)">
+                    <div class="input-group">
+                        <textarea id="mensagemFeedback" 
+                                  placeholder="Digite suas dicas, sugestões ou comentários sobre o site..." 
+                                  rows="5"
+                                  required></textarea>
+                    </div>
+                    <button type="submit" class="btn-enviar-feedback">
+                        📧 Enviar para avaliapuc@gmail.com
+                    </button>
+                </form>
+                <div id="feedbackMensagem" class="feedback-mensagem" style="display: none;"></div>
+            </section>
+
+            <!-- Detalhes da Matéria Selecionada -->
+            <section class="card" id="detalhesMateria" style="display: none;">
+                <div class="detalhes-header">
+                    <h2 id="nomeMateriaSelecionada"></h2>
+                    <button class="btn-voltar" onclick="voltarParaLista()">← Voltar</button>
+                </div>
+
+                <!-- Média Teórica -->
+                <div class="opcao-media">
+                    <h3>📖 Média Teórica</h3>
+                    <div class="media-resultado">
+                        <span class="media-label">Média:</span>
+                        <span class="media-valor" id="mediaTeorica">0.00</span>
+                    </div>
+                    <div class="notas-container" id="notasTeoricas"></div>
+                </div>
+
+                <!-- Média Prática -->
+                <div class="opcao-media">
+                    <h3>🔬 Média Prática</h3>
+                    <div class="media-resultado">
+                        <span class="media-label">Média:</span>
+                        <span class="media-valor" id="mediaPratica">0.00</span>
+                    </div>
+                    <div class="notas-container" id="notasPraticas"></div>
+                </div>
+
+                <!-- Média Final -->
+                <div class="opcao-media">
+                    <h3>📊 Média Final</h3>
+                    <div class="media-resultado soma-medias">
+                        <span class="media-label">Média Final:</span>
+                        <span class="media-valor" id="somaMedias">0.00</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 André Wilckay. Todos os direitos reservados.</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
