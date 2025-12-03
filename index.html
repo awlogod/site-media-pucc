@@ -12,7 +12,7 @@
             <div class="logo-container">
                 <img src="logo.png" alt="Logo AvaliaPucc" id="siteLogo" class="site-logo">
             </div>
-            <h1>📚 AvaliaPucc</h1>
+            <h1>📚 AvaliaPuc</h1>
             <p>Calculadora que gerencia suas notas e calcula as médias por matéria</p>
         </header>
 
@@ -27,35 +27,79 @@
                     <input type="text" id="raAluno" placeholder="RA (Registro Acadêmico - 8 dígitos)" maxlength="8" oninput="validarRA()">
                 </div>
                 <div id="erroRA" class="mensagem-erro" style="display: none;"></div>
+                <div class="input-group">
+                    <select id="cursoAluno" required>
+                        <option value="">Selecione seu curso</option>
+                        <option value="engenharia">Engenharia de Computação</option>
+                        <option value="ciencias_dados">Ciências de Dados e IA</option>
+                    </select>
+                </div>
                 <button onclick="acessarMaterias()">Acessar Matérias</button>
             </section>
 
             <!-- Informações do Aluno -->
             <section class="card" id="infoAluno" style="display: none;">
-                <h2 id="infoAlunoTexto"></h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                    <h2 id="infoAlunoTexto" style="margin: 0; flex: 1;"></h2>
+                    <button onclick="voltarAoInicio()" class="btn-voltar-inicio">← Voltar ao Início</button>
+                </div>
             </section>
 
             <!-- Lista de Matérias -->
             <div id="listaMaterias"></div>
 
-            <!-- Card de Feedback -->
-            <section class="card feedback-card" id="feedbackCard" style="display: none;">
-                <div class="feedback-header">
-                    <h2>💡 Envie suas Dicas de Melhorias</h2>
+            <!-- Fórum de Dicas, Melhorias e Dúvidas -->
+            <section class="card forum-card" id="forumCard" style="display: none;">
+                <div class="forum-header">
+                    <h2>💬 Fórum de Dicas, Melhorias e Dúvidas</h2>
+                    <p class="forum-description">Compartilhe suas ideias, sugestões e tire suas dúvidas com a comunidade!</p>
                 </div>
-                <p class="feedback-description">Tem alguma sugestão para melhorar o site? Envie sua mensagem para nós!</p>
-                <form id="feedbackForm" onsubmit="enviarFeedback(event)">
-                    <div class="input-group">
-                        <textarea id="mensagemFeedback" 
-                                  placeholder="Digite suas dicas, sugestões ou comentários sobre o site..." 
-                                  rows="5"
-                                  required></textarea>
-                    </div>
-                    <button type="submit" class="btn-enviar-feedback">
-                        📧 Enviar para avaliapuc@gmail.com
+                
+                <!-- Abas do Fórum -->
+                <div class="forum-tabs">
+                    <button class="forum-tab active" onclick="filtrarForum('todas')" data-categoria="todas">
+                        📋 Todas
                     </button>
-                </form>
-                <div id="feedbackMensagem" class="feedback-mensagem" style="display: none;"></div>
+                    <button class="forum-tab" onclick="filtrarForum('dicas')" data-categoria="dicas">
+                        💡 Dicas
+                    </button>
+                    <button class="forum-tab" onclick="filtrarForum('melhorias')" data-categoria="melhorias">
+                        ✨ Melhorias
+                    </button>
+                    <button class="forum-tab" onclick="filtrarForum('duvidas')" data-categoria="duvidas">
+                        ❓ Dúvidas
+                    </button>
+                </div>
+
+                <!-- Lista de Mensagens -->
+                <div class="forum-mensagens" id="forumMensagens">
+                    <!-- Mensagens serão inseridas aqui via JavaScript -->
+                </div>
+
+                <!-- Formulário para Nova Mensagem -->
+                <div class="forum-form-container">
+                    <h3>➕ Adicionar Nova Mensagem</h3>
+                    <form id="forumForm" onsubmit="adicionarMensagemForum(event)">
+                        <div class="input-group">
+                            <select id="forumCategoria" required>
+                                <option value="">Selecione a categoria</option>
+                                <option value="dicas">💡 Dica</option>
+                                <option value="melhorias">✨ Melhoria</option>
+                                <option value="duvidas">❓ Dúvida</option>
+                            </select>
+                        </div>
+                        <div class="input-group">
+                            <textarea id="forumMensagem" 
+                                      placeholder="Digite sua mensagem aqui..." 
+                                      rows="4"
+                                      required></textarea>
+                        </div>
+                        <button type="submit" class="btn-enviar-forum">
+                            📤 Publicar Mensagem
+                        </button>
+                    </form>
+                    <div id="forumMensagemStatus" class="forum-mensagem-status" style="display: none;"></div>
+                </div>
             </section>
 
             <!-- Detalhes da Matéria Selecionada -->
@@ -101,6 +145,53 @@
         </footer>
     </div>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // ============================================
+        // CONFIGURAÇÃO DO FIREBASE
+        // ============================================
+        // IMPORTANTE: Substitua os valores abaixo com suas credenciais do Firebase
+        // Veja o arquivo SETUP_FIREBASE.md para instruções detalhadas
+        // ============================================
+        
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Verificar se o Firebase está configurado
+        const firebaseConfigurado = firebaseConfig.apiKey !== "YOUR_API_KEY" && 
+                                   firebaseConfig.projectId !== "YOUR_PROJECT_ID";
+
+        if (firebaseConfigurado) {
+            try {
+                // Initialize Firebase
+                const app = initializeApp(firebaseConfig);
+                const db = getFirestore(app);
+                
+                // Tornar db disponível globalmente
+                window.db = db;
+                window.firebaseConfigurado = true;
+                console.log('✅ Firebase configurado com sucesso!');
+            } catch (error) {
+                console.error('❌ Erro ao inicializar Firebase:', error);
+                window.firebaseConfigurado = false;
+            }
+        } else {
+            console.warn('⚠️ Firebase não configurado. O fórum usará localStorage como fallback.');
+            console.warn('📖 Veja SETUP_FIREBASE.md para instruções de configuração.');
+            window.firebaseConfigurado = false;
+        }
+    </script>
+    
     <script src="script.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
-// Matérias pré-definidas com suas fórmulas
-const materiasConfig = {
+// Matérias pré-definidas para Engenharia de Computação
+const materiasConfigEngenharia = {
     'Cálculo 1': {
         tipo: 'calculo1',
         formulaTeorica: {
@@ -70,12 +70,58 @@ const materiasConfig = {
     }
 };
 
-const materiasPredefinidas = Object.keys(materiasConfig);
+// Matérias pré-definidas para Ciências de Dados e IA
+const materiasConfigCienciasDados = {
+    // Por enquanto, usar estrutura genérica - pode ser configurada depois
+    'MATÉRIA 1 - CIÊNCIAS DE DADOS': {
+        tipo: 'padrao',
+        formulaTeorica: null,
+        formulaPratica: null,
+        formulaFinal: 'soma'
+    },
+    'MATÉRIA 2 - CIÊNCIAS DE DADOS': {
+        tipo: 'padrao',
+        formulaTeorica: null,
+        formulaPratica: null,
+        formulaFinal: 'soma'
+    },
+    'MATÉRIA 3 - CIÊNCIAS DE DADOS': {
+        tipo: 'padrao',
+        formulaTeorica: null,
+        formulaPratica: null,
+        formulaFinal: 'soma'
+    },
+    'MATÉRIA 4 - CIÊNCIAS DE DADOS': {
+        tipo: 'padrao',
+        formulaTeorica: null,
+        formulaPratica: null,
+        formulaFinal: 'soma'
+    },
+    'MATÉRIA 5 - CIÊNCIAS DE DADOS': {
+        tipo: 'padrao',
+        formulaTeorica: null,
+        formulaPratica: null,
+        formulaFinal: 'soma'
+    }
+};
+
+// Função para obter configuração de matérias baseado no curso
+function obterMateriasConfig(curso) {
+    if (curso === 'engenharia') {
+        return materiasConfigEngenharia;
+    } else if (curso === 'ciencias_dados') {
+        return materiasConfigCienciasDados;
+    }
+    return {};
+}
+
+const materiasPredefinidas = Object.keys(materiasConfigEngenharia);
 
 // Dados do aluno atual
 let alunoAtual = {
     nome: '',
     ra: '',
+    curso: '',
     materias: []
 };
 
@@ -113,6 +159,7 @@ function validarRA() {
 function acessarMaterias() {
     const nome = document.getElementById('nomeAluno').value.trim();
     const ra = document.getElementById('raAluno').value.trim();
+    const curso = document.getElementById('cursoAluno').value;
 
     if (nome === '') {
         alert('Por favor, digite seu nome!');
@@ -121,6 +168,12 @@ function acessarMaterias() {
 
     if (ra === '') {
         alert('Por favor, digite seu RA!');
+        return;
+    }
+    
+    if (curso === '') {
+        alert('Por favor, selecione seu curso!');
+        document.getElementById('cursoAluno').focus();
         return;
     }
     
@@ -139,9 +192,14 @@ function acessarMaterias() {
     // Salvar dados do aluno (usar apenas números do RA)
     alunoAtual.nome = nome;
     alunoAtual.ra = raNumerico;
+    alunoAtual.curso = curso;
 
-    // Inicializar matérias se ainda não foram inicializadas
-    if (alunoAtual.materias.length === 0) {
+    // Obter configuração de matérias baseado no curso
+    const materiasConfig = obterMateriasConfig(curso);
+    const materiasPredefinidas = Object.keys(materiasConfig);
+
+    // Inicializar matérias se ainda não foram inicializadas ou se o curso mudou
+    if (alunoAtual.materias.length === 0 || alunoAtual.materias.length !== materiasPredefinidas.length) {
         alunoAtual.materias = materiasPredefinidas.map(nomeMateria => {
             const config = materiasConfig[nomeMateria];
             const materia = {
@@ -204,12 +262,51 @@ function acessarMaterias() {
     document.getElementById('infoAluno').style.display = 'block';
     document.getElementById('infoAlunoTexto').textContent = `Aluno: ${nome} | RA: ${ra}`;
 
-    // Mostrar matérias e card de feedback
+    // Mostrar matérias e fórum
     atualizarListaMaterias();
-    document.getElementById('feedbackCard').style.display = 'block';
+    document.getElementById('forumCard').style.display = 'block';
+    carregarMensagensForum().catch(error => {
+        console.error('Erro ao carregar mensagens do fórum:', error);
+    });
     
     // Scroll suave até as matérias
     document.getElementById('listaMaterias').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Função para voltar ao início (tela de login)
+function voltarAoInicio() {
+    // Resetar dados do aluno
+    alunoAtual = {
+        nome: '',
+        ra: '',
+        curso: '',
+        materias: []
+    };
+    
+    // Limpar campos de input
+    document.getElementById('nomeAluno').value = '';
+    document.getElementById('raAluno').value = '';
+    document.getElementById('cursoAluno').value = '';
+    document.getElementById('erroRA').style.display = 'none';
+    document.getElementById('raAluno').classList.remove('error');
+    
+    // Esconder todas as seções
+    document.getElementById('loginCard').style.display = 'block';
+    document.getElementById('infoAluno').style.display = 'none';
+    document.getElementById('listaMaterias').innerHTML = '';
+    document.getElementById('detalhesMateria').style.display = 'none';
+    document.getElementById('forumCard').style.display = 'none';
+    
+    // Resetar índice de matéria selecionada
+    materiaSelecionadaIndex = -1;
+    
+    // Scroll suave para o topo
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    // Focar no campo de nome
+    setTimeout(() => {
+        document.getElementById('nomeAluno').focus();
+    }, 300);
 }
 
 // Função para calcular média teórica de Cálculo 1
@@ -458,7 +555,7 @@ function calcularMediaGenerica(notas) {
 
 // Função para calcular médias de uma matéria
 function calcularMediasMateria(materia) {
-    const config = materiasConfig[materia.nome];
+    const config = obterMateriasConfig(alunoAtual.curso)[materia.nome];
     
     if (materia.tipo === 'calculo1') {
         const MT = calcularMediaTeoricaCalculo1(materia.notas);
@@ -577,7 +674,7 @@ function atualizarDetalhesMateria() {
     if (materiaSelecionadaIndex === -1) return;
 
     const materia = alunoAtual.materias[materiaSelecionadaIndex];
-    const config = materiasConfig[materia.nome];
+    const config = obterMateriasConfig(alunoAtual.curso)[materia.nome];
     const medias = calcularMediasMateria(materia);
     
     // Atualizar exibição das médias
@@ -627,7 +724,7 @@ function atualizarDetalhesMateria() {
 
 // Função para renderizar campos específicos de Cálculo 1
 function renderizarCamposCalculo1(materia) {
-    const config = materiasConfig[materia.nome];
+    const config = obterMateriasConfig(alunoAtual.curso)[materia.nome];
     
     // Renderizar campos teóricos
     const notasTeoricasContainer = document.getElementById('notasTeoricas');
@@ -692,7 +789,7 @@ function renderizarCamposCalculo1(materia) {
 
 // Função para renderizar campos específicos de Organização de Sistemas
 function renderizarCamposOrganizacao(materia) {
-    const config = materiasConfig[materia.nome];
+    const config = obterMateriasConfig(alunoAtual.curso)[materia.nome];
     
     // Renderizar campos teóricos
     const notasTeoricasContainer = document.getElementById('notasTeoricas');
@@ -757,7 +854,7 @@ function renderizarCamposOrganizacao(materia) {
 
 // Função para renderizar campos específicos de PI Web
 function renderizarCamposPIWeb(materia) {
-    const config = materiasConfig[materia.nome];
+    const config = obterMateriasConfig(alunoAtual.curso)[materia.nome];
     
     // Renderizar campos teóricos (TF - Trabalho Final)
     const notasTeoricasContainer = document.getElementById('notasTeoricas');
@@ -822,7 +919,7 @@ function renderizarCamposPIWeb(materia) {
 
 // Função para renderizar campos específicos de Robótica Computacional
 function renderizarCamposRobotica(materia) {
-    const config = materiasConfig[materia.nome];
+    const config = obterMateriasConfig(alunoAtual.curso)[materia.nome];
     
     // Renderizar campos teóricos
     const notasTeoricasContainer = document.getElementById('notasTeoricas');
@@ -899,7 +996,7 @@ function renderizarCamposRobotica(materia) {
 
 // Função para renderizar campos específicos de Teologia
 function renderizarCamposTeologia(materia) {
-    const config = materiasConfig[materia.nome];
+    const config = obterMateriasConfig(alunoAtual.curso)[materia.nome];
     
     // Renderizar campos teóricos
     const notasTeoricasContainer = document.getElementById('notasTeoricas');
@@ -1293,40 +1390,261 @@ function adicionarNotaPratica() {
     adicionarNotaGenerica('praticas');
 }
 
-// Função para enviar feedback
-function enviarFeedback(event) {
+// ==================== SISTEMA DE FÓRUM ====================
+
+// Função para escapar HTML e prevenir XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Verificar se Firebase está disponível e configurado
+function firebaseDisponivel() {
+    return typeof window.db !== 'undefined' && 
+           window.db !== null && 
+           window.firebaseConfigurado === true;
+}
+
+// Função para obter mensagens do Firestore (ou localStorage como fallback)
+async function obterMensagensForum() {
+    if (firebaseDisponivel()) {
+        try {
+            const { collection, getDocs, orderBy, query } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const q = query(collection(window.db, 'forumMensagens'), orderBy('data', 'desc'));
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+        } catch (error) {
+            console.error('Erro ao carregar mensagens do Firestore:', error);
+            // Fallback para localStorage
+            return obterMensagensLocalStorage();
+        }
+    } else {
+        // Fallback para localStorage se Firebase não estiver configurado
+        return obterMensagensLocalStorage();
+    }
+}
+
+// Função fallback para obter mensagens do localStorage
+function obterMensagensLocalStorage() {
+    const mensagens = localStorage.getItem('forumMensagens');
+    return mensagens ? JSON.parse(mensagens) : [];
+}
+
+// Função para salvar mensagem no Firestore (ou localStorage como fallback)
+async function salvarMensagemForum(mensagem) {
+    if (firebaseDisponivel()) {
+        try {
+            const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            await addDoc(collection(window.db, 'forumMensagens'), {
+                ...mensagem,
+                data: serverTimestamp()
+            });
+            return true;
+        } catch (error) {
+            console.error('Erro ao salvar mensagem no Firestore:', error);
+            // Fallback para localStorage
+            salvarMensagemLocalStorage(mensagem);
+            return false;
+        }
+    } else {
+        // Fallback para localStorage se Firebase não estiver configurado
+        salvarMensagemLocalStorage(mensagem);
+        return false;
+    }
+}
+
+// Função fallback para salvar mensagem no localStorage
+function salvarMensagemLocalStorage(mensagem) {
+    const mensagens = obterMensagensLocalStorage();
+    mensagens.unshift(mensagem);
+    localStorage.setItem('forumMensagens', JSON.stringify(mensagens));
+}
+
+// Função para adicionar nova mensagem ao fórum
+async function adicionarMensagemForum(event) {
     event.preventDefault();
     
-    const mensagem = document.getElementById('mensagemFeedback').value.trim();
-    const feedbackMensagem = document.getElementById('feedbackMensagem');
+    const categoria = document.getElementById('forumCategoria').value;
+    const mensagem = document.getElementById('forumMensagem').value.trim();
+    const statusDiv = document.getElementById('forumMensagemStatus');
+    const btnEnviar = document.querySelector('.btn-enviar-forum');
     
-    if (mensagem === '') {
-        feedbackMensagem.textContent = 'Por favor, digite sua mensagem antes de enviar.';
-        feedbackMensagem.className = 'feedback-mensagem erro';
-        feedbackMensagem.style.display = 'block';
+    if (!categoria) {
+        statusDiv.textContent = 'Por favor, selecione uma categoria.';
+        statusDiv.className = 'forum-mensagem-status erro';
+        statusDiv.style.display = 'block';
         return;
     }
     
-    // Criar link mailto com assunto e corpo da mensagem
-    const assunto = encodeURIComponent('Dicas de Melhorias - AvaliaPucc');
-    const corpo = encodeURIComponent(`Olá,\n\nGostaria de compartilhar as seguintes sugestões de melhorias para o site:\n\n${mensagem}\n\nAtenciosamente,\n${alunoAtual.nome || 'Usuário'}\nRA: ${alunoAtual.ra || 'N/A'}`);
-    const email = 'avaliapuc@gmail.com';
+    if (mensagem === '') {
+        statusDiv.textContent = 'Por favor, digite sua mensagem.';
+        statusDiv.className = 'forum-mensagem-status erro';
+        statusDiv.style.display = 'block';
+        return;
+    }
     
-    const mailtoLink = `mailto:${email}?subject=${assunto}&body=${corpo}`;
+    // Desabilitar botão e mostrar loading
+    btnEnviar.disabled = true;
+    btnEnviar.textContent = '⏳ Publicando...';
+    btnEnviar.style.opacity = '0.7';
+    btnEnviar.style.cursor = 'not-allowed';
     
-    // Abrir cliente de email
-    window.location.href = mailtoLink;
+    // Criar nova mensagem
+    const novaMensagem = {
+        categoria: categoria,
+        autor: alunoAtual.nome || 'Usuário',
+        ra: alunoAtual.ra || 'N/A',
+        mensagem: mensagem,
+        data: new Date().toISOString() // Será substituído por serverTimestamp no Firestore
+    };
     
-    // Mostrar mensagem de sucesso
-    feedbackMensagem.textContent = 'Cliente de email aberto! Preencha e envie sua mensagem.';
-    feedbackMensagem.className = 'feedback-mensagem sucesso';
-    feedbackMensagem.style.display = 'block';
+    try {
+        // Salvar no Firestore ou localStorage
+        await salvarMensagemForum(novaMensagem);
+        
+        // Mostrar mensagem de sucesso
+        statusDiv.textContent = '✅ Mensagem publicada com sucesso!';
+        statusDiv.className = 'forum-mensagem-status sucesso';
+        statusDiv.style.display = 'block';
+        
+        // Limpar formulário
+        document.getElementById('forumForm').reset();
+        
+        // Recarregar mensagens
+        await carregarMensagensForum(categoriaAtual);
+        
+    } catch (error) {
+        console.error('Erro ao adicionar mensagem:', error);
+        statusDiv.textContent = '❌ Erro ao publicar mensagem. Tente novamente.';
+        statusDiv.className = 'forum-mensagem-status erro';
+        statusDiv.style.display = 'block';
+    } finally {
+        // Restaurar botão
+        btnEnviar.disabled = false;
+        btnEnviar.textContent = '📤 Publicar Mensagem';
+        btnEnviar.style.opacity = '1';
+        btnEnviar.style.cursor = 'pointer';
+        
+        // Esconder mensagem de status após 3 segundos
+        setTimeout(() => {
+            statusDiv.style.display = 'none';
+        }, 3000);
+    }
+}
+
+// Função para carregar e exibir mensagens do fórum
+let categoriaAtual = 'todas';
+
+async function carregarMensagensForum(categoriaFiltro = categoriaAtual) {
+    categoriaAtual = categoriaFiltro;
+    const container = document.getElementById('forumMensagens');
     
-    // Limpar formulário após 3 segundos
-    setTimeout(() => {
-        document.getElementById('feedbackForm').reset();
-        feedbackMensagem.style.display = 'none';
-    }, 5000);
+    // Mostrar loading
+    container.innerHTML = '<div class="forum-loading">⏳ Carregando mensagens...</div>';
+    
+    try {
+        const mensagens = await obterMensagensForum();
+        
+        // Filtrar mensagens se necessário
+        let mensagensFiltradas = mensagens;
+        if (categoriaFiltro !== 'todas') {
+            mensagensFiltradas = mensagens.filter(msg => msg.categoria === categoriaFiltro);
+        }
+        
+        if (mensagensFiltradas.length === 0) {
+            const mensagemVazia = categoriaFiltro === 'todas' ? 'mensagem' : 
+                                  categoriaFiltro === 'dicas' ? 'dica' : 
+                                  categoriaFiltro === 'melhorias' ? 'melhoria' : 'dúvida';
+            container.innerHTML = `
+                <div class="forum-empty">
+                    <p>📭 Nenhuma mensagem ainda.</p>
+                    <p>Seja o primeiro a compartilhar uma ${mensagemVazia}!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        // Renderizar mensagens
+        container.innerHTML = mensagensFiltradas.map(msg => {
+            // Tratar data do Firestore (pode ser Timestamp ou string)
+            let data;
+            if (msg.data && msg.data.toDate) {
+                // Firestore Timestamp
+                data = msg.data.toDate();
+            } else if (msg.data && typeof msg.data === 'string') {
+                // String ISO
+                data = new Date(msg.data);
+            } else if (msg.data && msg.data.seconds) {
+                // Firestore Timestamp em formato objeto
+                data = new Date(msg.data.seconds * 1000);
+            } else {
+                data = new Date();
+            }
+            
+            const dataFormatada = data.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const iconesCategoria = {
+                'dicas': '💡',
+                'melhorias': '✨',
+                'duvidas': '❓'
+            };
+            
+            const nomesCategoria = {
+                'dicas': 'Dica',
+                'melhorias': 'Melhoria',
+                'duvidas': 'Dúvida'
+            };
+            
+            return `
+                <div class="forum-mensagem-item">
+                    <div class="forum-mensagem-header">
+                        <div class="forum-mensagem-categoria">
+                            ${iconesCategoria[msg.categoria]} ${nomesCategoria[msg.categoria]}
+                        </div>
+                        <div class="forum-mensagem-data">${dataFormatada}</div>
+                    </div>
+                    <div class="forum-mensagem-autor">
+                        <strong>${escapeHtml(msg.autor)}</strong> <span class="forum-ra">(RA: ${escapeHtml(msg.ra)})</span>
+                    </div>
+                    <div class="forum-mensagem-texto">${escapeHtml(msg.mensagem).replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Erro ao carregar mensagens:', error);
+        container.innerHTML = `
+            <div class="forum-empty">
+                <p>❌ Erro ao carregar mensagens.</p>
+                <p>Tente recarregar a página.</p>
+            </div>
+        `;
+    }
+}
+
+// Função para filtrar mensagens por categoria
+async function filtrarForum(categoria) {
+    categoriaAtual = categoria;
+    
+    // Atualizar abas ativas
+    document.querySelectorAll('.forum-tab').forEach(tab => {
+        tab.classList.remove('active');
+        if (tab.dataset.categoria === categoria) {
+            tab.classList.add('active');
+        }
+    });
+    
+    // Recarregar mensagens com filtro
+    await carregarMensagensForum(categoria);
 }
 
 // Inicializar ao carregar a página

@@ -1,0 +1,10 @@
+{
+  "name": "avaliapucc",
+  "type": "static",
+  "main": "index.html",
+  "version": "1.0.0",
+  "description": "Calculadora de Médias - PUC Campinas",
+  "author": "André Wilckay",
+  "license": "MIT"
+}
+
